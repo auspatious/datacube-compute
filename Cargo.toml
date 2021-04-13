@@ -1,0 +1,15 @@
+[package]
+name = "datacube-compute-backend"
+version = "0.1.0"
+authors = ["kieran"]
+edition = "2018"
+
+[lib]
+name = "backend"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.11.1", features = ["extension-module"] }
+numpy = "0.11.0"
+ndarray= { version = "0.15.1", features = ["rayon"] }
+rayon = "1.5.0"
