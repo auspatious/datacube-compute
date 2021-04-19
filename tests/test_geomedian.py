@@ -2,7 +2,7 @@ import time
 import numpy as np
 import pytest
 from datacube_compute import geomedian
-from hdstats import nangeomedian_pcm
+from hdstats import nangeomedian_pcm, smad_pcm, emad_pcm, bcmad_pcm
 
 
 @pytest.fixture
@@ -11,6 +11,7 @@ def arr():
     mask = np.random.random(50) > 0.4  # 40% of time slices invalid
     xx[:, :, :, mask] = np.nan
     return xx
+
 
 @pytest.fixture
 def kwargs(): 
@@ -27,7 +28,13 @@ def test_benchmark(benchmark, arr, kwargs):
 
 
 def test_benchmark_hdstats(benchmark, arr, kwargs):
-    benchmark(nangeomedian_pcm, arr, **kwargs, nocheck=True)
+    def func():
+        gm = nangeomedian_pcm(arr, nocheck=True, **kwargs)
+        smad = smad_pcm(arr, gm, **kwargs)
+        bcmad = bcmad_pcm(arr, gm, **kwargs)
+        emad = emad_pcm(arr, gm, **kwargs)
+
+    benchmark(func)
 
 
 def test_benchmark_parallel(benchmark, arr, kwargs_parallel):
@@ -35,13 +42,47 @@ def test_benchmark_parallel(benchmark, arr, kwargs_parallel):
 
 
 def test_benchmark_hdstats_parallel(benchmark, arr, kwargs_parallel):
-    benchmark(nangeomedian_pcm, arr, **kwargs_parallel, nocheck=True)
+    def func():
+        gm = nangeomedian_pcm(arr, nocheck=True, **kwargs_parallel)
+        smad = smad_pcm(arr, gm, **kwargs_parallel)
+        bcmad = bcmad_pcm(arr, gm, **kwargs_parallel)
+        emad = emad_pcm(arr, gm, **kwargs_parallel)
 
+    benchmark(func)
+    
 
 def test_accuracy(arr, kwargs):
 
-    gm_1 = geomedian(arr, **kwargs)
+    gm_1, mads_1 = geomedian(arr, **kwargs)
     gm_2 = nangeomedian_pcm(arr, **kwargs)
+    
+    # use rust geomedian to calculate mads
+    smad = smad_pcm(arr, gm_1, **kwargs)
+    bcmad = bcmad_pcm(arr, gm_1, **kwargs)
+    emad = emad_pcm(arr, gm_1, **kwargs)
 
-    dist = np.linalg.norm(gm_1 - gm_2)
-    assert dist < 100 * kwargs['eps']
+    dists = np.sqrt(((gm_1 - gm_2) ** 2).sum(axis=-1))
+    assert (dists < kwargs['eps']).all()
+
+    assert np.allclose(emad, mads_1[:, :, 0])
+    assert np.allclose(smad, mads_1[:, :, 1])
+    assert np.allclose(bcmad, mads_1[:, :, 2])
+
+
+def test_novalid_measurements(arr, kwargs):
+
+    arr_bad = arr.copy()
+    arr_bad[1, 2, :, :] = np.nan
+
+    gm_1, mads_1 = geomedian(arr, **kwargs)
+    gm_2, mads_2 = geomedian(arr_bad, **kwargs)
+
+    for (arr_1, arr_2) in [(gm_1, gm_2), (mads_1, mads_2)]:
+        assert (arr_1[:1, :2, :] == arr_2[:1, :2, :]).all()
+        assert (arr_1[2:, 3:, :] == arr_2[2:, 3:, :]).all()
+        assert (arr_1[1, :2, :] == arr_2[1, :2, :]).all()
+        assert (arr_1[1, 3:, :] == arr_2[1, 3:, :]).all()
+        assert (arr_1[1, :2, :] == arr_2[1, :2, :]).all()
+        assert (arr_1[:1, 2, :] == arr_2[:1, 2, :]).all()
+        assert (arr_1[2:, 2, :] == arr_2[2:, 2, :]).all()
+        assert np.isnan(arr_2[1, 2, :]).all()
