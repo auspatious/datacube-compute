@@ -13,3 +13,4 @@ pyo3 = { version = "0.11.1", features = ["extension-module"] }
 numpy = "0.11.0"
 ndarray= { version = "0.15.1", features = ["rayon"] }
 rayon = "1.5.0"
+num-traits = "0.2"
