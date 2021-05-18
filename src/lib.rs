@@ -1,8 +1,9 @@
-use numpy::{PyArray3, PyArray4, ToPyArray};
+use numpy::{PyArray1, PyArray2, PyArray3, PyArray4, ToPyArray};
 use pyo3::prelude::{pymodule, PyModule, PyResult, Python};
 
 mod geomedian;
 mod mad;
+mod percentile;
 
 #[pymodule]
 fn backend(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -66,6 +67,134 @@ fn backend(_py: Python, m: &PyModule) -> PyResult<()> {
             py.allow_threads(|| geomedian::geomedian_int(in_array, maxiters, eps, num_threads, nodata, scale, offset));
 
         (gm.to_pyarray(py), mads.to_pyarray(py))
+    }
+
+    #[pyfn(m, "_percentile_uint16")]
+    fn py_percentile_uint16<'a>(
+        py: Python<'a>,
+        in_array: &'a PyArray2<u16>,
+        percentiles: &'a PyArray1<f64>,
+        nodata: u16,
+    ) -> &'a PyArray2<u16> {
+        let in_array = in_array.readonly();
+        let in_array = in_array.as_array();
+        
+        let percentiles = percentiles.readonly();
+        let percentiles = percentiles.as_array();
+
+        // release GIL
+        let out = py.allow_threads( || 
+            percentile::percentile(in_array, percentiles, nodata)
+        );
+
+        out.to_pyarray(py)
+    }
+
+
+    #[pyfn(m, "_percentile_int16")]
+    fn py_percentile_int16<'a>(
+        py: Python<'a>,
+        in_array: &'a PyArray2<i16>,
+        percentiles: &'a PyArray1<f64>,
+        nodata: i16,
+    ) -> &'a PyArray2<i16> {
+        let in_array = in_array.readonly();
+        let in_array = in_array.as_array();
+        
+        let percentiles = percentiles.readonly();
+        let percentiles = percentiles.as_array();
+
+        // release GIL
+        let out = py.allow_threads( || 
+            percentile::percentile(in_array, percentiles, nodata)
+        );
+
+        out.to_pyarray(py)
+    }
+
+
+    #[pyfn(m, "_percentile_uint8")]
+    fn py_percentile_uint8<'a>(
+        py: Python<'a>,
+        in_array: &'a PyArray2<u8>,
+        percentiles: &'a PyArray1<f64>,
+        nodata: u8,
+    ) -> &'a PyArray2<u8> {
+        let in_array = in_array.readonly();
+        let in_array = in_array.as_array();
+        
+        let percentiles = percentiles.readonly();
+        let percentiles = percentiles.as_array();
+
+        // release GIL
+        let out = py.allow_threads( || 
+            percentile::percentile(in_array, percentiles, nodata)
+        );
+
+        out.to_pyarray(py)
+    }
+
+
+    #[pyfn(m, "_percentile_int8")]
+    fn py_percentile_int8<'a>(
+        py: Python<'a>,
+        in_array: &'a PyArray2<i8>,
+        percentiles: &'a PyArray1<f64>,
+        nodata: i8,
+    ) -> &'a PyArray2<i8> {
+        let in_array = in_array.readonly();
+        let in_array = in_array.as_array();
+        
+        let percentiles = percentiles.readonly();
+        let percentiles = percentiles.as_array();
+
+        // release GIL
+        let out = py.allow_threads( || 
+            percentile::percentile(in_array, percentiles, nodata)
+        );
+
+        out.to_pyarray(py)
+    }
+
+    #[pyfn(m, "_percentile_f32")]
+    fn py_percentile_f32<'a>(
+        py: Python<'a>,
+        in_array: &'a PyArray2<f32>,
+        percentiles: &'a PyArray1<f64>,
+    ) -> &'a PyArray2<f32> {
+        let in_array = in_array.readonly();
+        let in_array = in_array.as_array();
+        
+        let percentiles = percentiles.readonly();
+        let percentiles = percentiles.as_array();
+
+        // release GIL
+        let out = py.allow_threads( || 
+            percentile::percentile(in_array, percentiles, f32::NAN)
+        );
+
+        out.to_pyarray(py)
+    }
+
+
+    #[pyfn(m, "_percentile_f64")]
+    fn py_percentile_f64<'a>(
+        py: Python<'a>,
+        in_array: &'a PyArray2<f64>,
+        percentiles: &'a PyArray1<f64>,
+    ) -> &'a PyArray2<f64> {
+        let in_array = in_array.readonly();
+        let in_array = in_array.as_array();
+        
+        let percentiles = percentiles.readonly();
+        let percentiles = percentiles.as_array();
+
+        // release GIL
+        let out = py.allow_threads( || 
+            percentile::percentile(in_array, percentiles, f64::NAN)
+        );
+
+        out.to_pyarray(py)
     }
 
     Ok(())
