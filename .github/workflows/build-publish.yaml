@@ -1,0 +1,81 @@
+name: Build and Publish Python Package
+
+on:
+  push:
+  release:
+    types:
+      - created
+
+jobs:
+  # test:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.x
+
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install --upgrade setuptools wheel twine pytest hdstats odc-algo
+  #         pip install -e .
+
+  #     - name: Run tests
+  #       run: |
+  #         pytest .
+
+  build:
+    runs-on: ubuntu-latest
+    # needs: test
+    # if: github.event_name == 'release'
+    strategy:
+        matrix:
+          os: [ubuntu-latest]
+          python-version: ["3.9", "3.10", "3.11", "3.12"]
+  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade setuptools wheel
+  
+      - name: Build the package
+        run: |
+          python setup.py sdist bdist_wheel
+
+      - name: Get version number for tagging the image
+        id: get_version
+        run: |
+          git fetch --all --tags
+          echo "VERSION=$(git describe --tags)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create
+          '${{ steps.get_version.outputs.VERSION }}'
+          --repo '${{ github.repository }}'
+          --notes ""
+
+      - name: Upload artifact signatures to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          gh release upload
+          '${{ steps.get_version.outputs.VERSION }}' dist/**
+          --repo '${{ github.repository }}'

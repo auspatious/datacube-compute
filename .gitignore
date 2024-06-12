@@ -1,0 +1,12 @@
+__pycache__
+backend.cpython-311-darwin.so
+datacube_compute.egg-info
+
+*.tif
+notebooks/**/*.xml
+*.vrt
+*.nc
+
+build
+target
+dist
