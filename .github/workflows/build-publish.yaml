@@ -54,6 +54,8 @@ jobs:
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir dist
+        env:
+          CIBW_BEFORE_ALL: "apt update && apt install -y cargo rustc"
 
       - name: Get version number for tagging the image
         id: get_version
