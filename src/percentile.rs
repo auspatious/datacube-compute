@@ -92,14 +92,14 @@ impl ValidCheck for u8 {
 
 
 impl ValidCheck for f32 {
-    fn is_valid(&self) -> bool {
+    fn is_valid(&self, _nodata: f32) -> bool {
         !self.is_nan()
     }
 }
 
 
 impl ValidCheck for f64 {
-    fn is_valid(&self) -> bool {
+    fn is_valid(&self, _nodata: f64) -> bool {
         !self.is_nan()
     }
 }
