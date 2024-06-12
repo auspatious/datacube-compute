@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 try:
     from setuptools_rust import RustExtension
@@ -15,7 +15,7 @@ except ImportError:
     else:
         from setuptools_rust import RustExtension
 
-setup_requires = ["setuptools-rust>=0.10.1", "wheel"]
+setup_requires = ["setuptools-rust>=0.10.1", "wheel", "setuptools_scm"]
 
 setup(
     name="datacube_compute",

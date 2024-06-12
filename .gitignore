@@ -10,3 +10,5 @@ notebooks/**/*.xml
 build
 target
 dist
+
+datacube_compute/_version.py

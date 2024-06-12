@@ -1,2 +1,11 @@
 [build-system]
-requires = ["setuptools", "wheel", "setuptools-rust"]
+requires = [
+    "setuptools",
+    "wheel",
+    "setuptools-rust",
+    "setuptools_scm[toml]>=3.4",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "datacube_compute/_version.py"
