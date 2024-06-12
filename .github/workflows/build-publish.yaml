@@ -63,16 +63,17 @@ jobs:
           git fetch --all --tags
           echo "VERSION=$(git describe --tags)" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create
-          '${{ steps.get_version.outputs.VERSION }}'
-          --repo '${{ github.repository }}'
-          --notes ""
+      # - name: Create GitHub Release
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   run: >-
+      #     gh release create
+      #     '${{ steps.get_version.outputs.VERSION }}'
+      #     --repo '${{ github.repository }}'
+      #     --notes ""
 
       - name: Upload artifact signatures to GitHub Release
+        if: github.event_name == 'release'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
