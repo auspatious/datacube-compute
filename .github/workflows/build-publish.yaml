@@ -2,13 +2,37 @@ name: Build and Publish Python Package
 
 on:
   push:
-    # branches:
-    #   - main
+  release:
+    types:
+      - created
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade setuptools wheel twine
+          pip install -e .
+
+      - name: Run tests
+        run: |
+          pytest .
+
+  build:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs: test
+  
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -31,12 +55,18 @@ jobs:
         run: |
           python3 setup.py build sdist bdist_wheel
 
+      - name: Get version number for tagging the image
+        id: get_version
+        run: |
+          git fetch --all --tags
+          echo "VERSION=$(git describe --tags)" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
           gh release create
-          '${{ github.ref_name }}'
+          '${{ steps.get_version.outputs.VERSION }}'
           --repo '${{ github.repository }}'
           --notes ""
 
@@ -45,5 +75,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
           gh release upload
-          '${{ github.ref_name }}' dist/**
+          '${{ steps.get_version.outputs.VERSION }}' dist/**
           --repo '${{ github.repository }}'
