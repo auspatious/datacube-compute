@@ -1,4 +1,3 @@
-import time
 import numpy as np
 import pytest
 from datacube_compute import geomedian
@@ -10,16 +9,28 @@ def arr(kwargs):
     mask = np.random.random((100, 100, 10, 50)) < 0.01
     xx[mask] = kwargs["nodata"]
     return xx
-    
-
-@pytest.fixture
-def kwargs(): 
-    return {"maxiters": 1000, "eps": 1e-5, "num_threads": 1, "nodata": -999, "scale": 1 / 10_000}
 
 
 @pytest.fixture
-def kwargs_parallel(): 
-    return {"maxiters": 1000, "eps": 1e-5, "num_threads": 4, "nodata": -999, "scale": 1 / 10_000}
+def kwargs():
+    return {
+        "maxiters": 1000,
+        "eps": 1e-5,
+        "num_threads": 1,
+        "nodata": -999,
+        "scale": 1 / 10_000,
+    }
+
+
+@pytest.fixture
+def kwargs_parallel():
+    return {
+        "maxiters": 1000,
+        "eps": 1e-5,
+        "num_threads": 4,
+        "nodata": -999,
+        "scale": 1 / 10_000,
+    }
 
 
 def test_benchmark_int16(benchmark, arr, kwargs):
@@ -29,9 +40,8 @@ def test_benchmark_int16(benchmark, arr, kwargs):
 def test_benchmark_parallel_int16(benchmark, arr, kwargs_parallel):
     benchmark(geomedian, arr, **kwargs_parallel)
 
-    
-def test_accuracy(arr, kwargs):
 
+def test_accuracy(arr, kwargs):
     arr_f32 = arr.astype(np.float32)
     arr_f32[arr == kwargs["nodata"]] = np.nan
     gm_1, mads_1 = geomedian(arr, **kwargs)
@@ -40,9 +50,8 @@ def test_accuracy(arr, kwargs):
     assert (np.abs(gm_1 - gm_2) <= 0.5).all()
     assert (mads_1 == mads_2).all()
 
-    
-def test_novalid_measurements(arr, kwargs):
 
+def test_novalid_measurements(arr, kwargs):
     arr_bad = arr.copy()
     arr_bad[1, 2, :, :] = kwargs["nodata"]
 
@@ -69,13 +78,12 @@ def test_novalid_measurements(arr, kwargs):
 
 
 def test_offset(arr, kwargs):
-    
     arr_f32 = arr.astype(np.float32)
     arr_f32[arr == kwargs["nodata"]] = np.nan
-    
+
     args_1 = kwargs.copy()
     args_1["offset"] = np.float32(100.0)
-    
+
     gm_1, mads_1 = geomedian(arr, **args_1)
     gm_2, mads_2 = geomedian(arr_f32, **args_1)
 

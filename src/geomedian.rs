@@ -74,7 +74,7 @@ fn geomedian_column<'a>(
         let inv_scale = 1.0 / scale;
         
         for band in 0..bands {
-            gm[[band]] = inv_scale * (gm[[band]] - offset); 
+            gm[[band]] = inv_scale * (gm[[band]] - offset);
         }
 
         for t in 0..data.shape()[0] {
@@ -83,7 +83,7 @@ fn geomedian_column<'a>(
             }
         }
 
-        // make immutable view of `gm` (implementds `Copy` trait)
+        // make immutable view of `gm` (implements `Copy` trait)
         let gm = gm.view();
         let data = data.view();
         mads_array[[0]] = mad::emad(data, gm);
@@ -116,7 +116,6 @@ fn get_valid_data<'a>(
         }
 
         idx += valid as usize;
-        
     }
 
     data.slice_mut(s![0..idx, ..])
@@ -230,7 +229,7 @@ fn get_valid_data_int<'a, T: NumericTools + Copy + std::cmp::PartialEq>(
     for t in 0..time_steps {
         let mut valid = true;
         for band in 0..bands {
-            valid &= (in_array[[band, t]] != nodata);
+            valid &= in_array[[band, t]] != nodata;
             if !valid {
                 break;
             }
