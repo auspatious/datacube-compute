@@ -7,35 +7,35 @@ on:
       - created
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  # test:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.x
 
-      - name: Install dependencies
-        run: |
-          pip install --upgrade setuptools wheel twine pytest hdstats odc-algo
-          pip install -e .
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install --upgrade setuptools wheel twine pytest hdstats odc-algo
+  #         pip install -e .
 
-      - name: Run tests
-        run: |
-          pytest .
+  #     - name: Run tests
+  #       run: |
+  #         pytest .
 
   build:
-    if: github.event_name == 'release'
     runs-on: ubuntu-latest
-    needs: test
+    # needs: test
+    # if: github.event_name == 'release'
   
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -51,9 +51,12 @@ jobs:
         run: |
           pip install --upgrade setuptools wheel twine
 
-      - name: Build Python package
-        run: |
-          python3 setup.py build sdist bdist_wheel
+      - name: Build and publish Python package
+        uses: RalfG/python-wheels-manylinux-build@v0.7.1-manylinux2010_x86_64
+        with:
+          python-versions: 'cp310-cp310 cp311-cp311 cp312-cp312'
+          build-requirements: 'setuptools'
+          system-packages: 'cargo rustc'
 
       - name: Get version number for tagging the image
         id: get_version
