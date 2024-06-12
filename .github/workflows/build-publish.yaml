@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade setuptools wheel twine pytest hdstats
+          pip install --upgrade setuptools wheel twine pytest hdstats odc-algo
           pip install -e .
 
       - name: Run tests
