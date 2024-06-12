@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade setuptools wheel twine
+          pip install --upgrade setuptools wheel twine pytest
           pip install -e .
 
       - name: Run tests
