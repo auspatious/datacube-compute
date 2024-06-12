@@ -55,7 +55,7 @@ jobs:
   
       - name: Build the package
         run: |
-          python setup.py sdist bdist_wheel
+          python setup.py bdist_wheel
 
       - name: Get version number for tagging the image
         id: get_version
