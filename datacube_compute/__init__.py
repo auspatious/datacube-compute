@@ -131,9 +131,10 @@ def geomedian_block_processor(
     eps=1e-6,
     maxiters=1000,
     num_threads=1,
+    dim="time",
     is_float=True,
 ):
-    array = input.to_array(dim="band").transpose("y", "x", "band", "time")
+    array = input.to_array(dim="band").transpose("y", "x", "band", dim)
 
     if nodata is None:
         nodata = input.attrs.get("nodata", None)
@@ -248,9 +249,16 @@ def geomedian_with_mads(
     :param work_chunks: Default is ``(100, 100)``, only applicable when input
                         is Dataset.
     """
-
     ny, nx = work_chunks
-    chunked = src.chunk({"y": ny, "x": nx, "time": -1})
+
+    dim = "time"
+    if dim not in src.dims:
+        if "spec" in src.dims:
+            dim = "spec"
+        else:
+            raise ValueError("Input dataset must have a 'time' or 'spec' dimension")
+
+    chunked = src.chunk({"y": ny, "x": nx, dim: -1})
 
     # Check the dtype of the first data variable
     is_float = next(iter(src.dtypes.values())) == "f"
@@ -267,6 +275,7 @@ def geomedian_with_mads(
             eps=eps,
             maxiters=maxiters,
             num_threads=num_threads,
+            dim=dim,
             is_float=is_float,
         ),
     )
