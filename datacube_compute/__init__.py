@@ -152,7 +152,7 @@ def geomedian_block_processor(
             nodata = nodata_vals.pop()
         else:
             if is_float:
-                nodata = float("nan")
+                nodata = np.nan
             else:
                 nodata = 0
 
@@ -180,7 +180,10 @@ def geomedian_block_processor(
     result["smad"] = xr.DataArray(data=smad, dims=dims[:2], coords=result.coords)
     result["bcmad"] = xr.DataArray(data=bcmad, dims=dims[:2], coords=result.coords)
 
-    count_good = np.all(array.data != nodata, axis=2).sum(axis=2)
+    if np.isnan(nodata):
+        count_good = np.all(~np.isnan(array.data), axis=2).sum(axis=2)
+    else:
+        count_good = np.all(array.data != nodata, axis=2).sum(axis=2)
 
     result["count"] = xr.DataArray(
         data=count_good, dims=dims[:2], coords=result.coords
@@ -191,7 +194,7 @@ def geomedian_block_processor(
         band = result[band_name]
         # Don't think these should all be nan
         if band_name in ["emad", "smad", "bcmad"]:
-            band.attrs = dict(nodata=float("nan"))
+            band.attrs = dict(nodata=np.nan)
         elif band_name == "count":
             band.attrs = dict(nodata=9999)
         else:
