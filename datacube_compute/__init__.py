@@ -150,11 +150,12 @@ def geomedian_block_processor(
             )
         elif len(nodata_vals) == 1:
             nodata = nodata_vals.pop()
+
+    if nodata is None:
+        if is_float:
+            nodata = np.nan
         else:
-            if is_float:
-                nodata = np.nan
-            else:
-                nodata = 0
+            nodata = 0
 
     gm_data, mads = geomedian(
         array.data,
