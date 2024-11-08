@@ -27,7 +27,7 @@ setup(
     long_description="",
     license="Apache License 2.0",
     tests_require=["pytest"],
-    install_requires=["numpy"],
+    install_requires=["numpy", "xarray"],
     packages=find_packages(),
     zip_safe=False,
     rust_extensions=[RustExtension("datacube_compute.backend")],
