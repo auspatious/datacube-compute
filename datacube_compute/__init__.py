@@ -145,9 +145,14 @@ def geomedian_block_processor(
             dv.attrs.get("nodata", None) for dv in input.data_vars.values()
         )
         if len(nodata_vals) > 1:
-            raise ValueError(
-                "Data arrays have more than 1 nodata value across them", nodata_vals
-            )
+            # Check for the nan case... nans are not equal to themselves
+            string_vals = set(str(v) for v in nodata_vals)
+            if len(string_vals) == 1 and string_vals.pop() == "nan":
+                nodata = np.nan
+            else:
+                raise ValueError(
+                    "Data arrays have more than 1 nodata value across them", nodata_vals
+                )
         elif len(nodata_vals) == 1:
             nodata = nodata_vals.pop()
 
