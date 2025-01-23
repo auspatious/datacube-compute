@@ -218,6 +218,7 @@ def geomedian_with_mads(
     num_threads: int = 1,
     work_chunks: Tuple[int, int] = (100, 100),
     is_float: bool = True,
+    nodata: Optional[Union[int, float]] = None,
 ) -> xr.Dataset:
     """
     Compute Geomedian on Dask backed Dataset.
@@ -257,6 +258,10 @@ def geomedian_with_mads(
 
     :param work_chunks: Default is ``(100, 100)``, only applicable when input
                         is Dataset.
+
+    :param is_float: If True, input is assumed to be float32, if False, input
+
+    :param nodata: Nodata value to use, if not provided it will be taken from
     """
     ny, nx = work_chunks
 
@@ -286,6 +291,7 @@ def geomedian_with_mads(
             num_threads=num_threads,
             dim=dim,
             is_float=is_float,
+            nodata=nodata,
         ),
     )
 
