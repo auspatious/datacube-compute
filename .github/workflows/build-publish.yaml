@@ -33,10 +33,10 @@ jobs:
     # needs: test
     # if: github.event_name == 'release'
     strategy:
-        matrix:
-          os: [ubuntu-latest]
-          python-version: ["3.9", "3.10", "3.11", "3.12"]
-  
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
