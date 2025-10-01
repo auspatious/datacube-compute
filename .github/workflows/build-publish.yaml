@@ -59,6 +59,7 @@ jobs:
           python setup.py bdist_wheel
 
       - name: Get version number for tagging the image
+        if: github.event_name == 'release'
         id: get_version
         run: |
           git fetch --all --tags
