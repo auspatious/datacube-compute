@@ -2,81 +2,85 @@ name: Build and Publish Python Package
 
 on:
   push:
+    branches: [main]
+  pull_request:
   release:
     types:
-      - created
+      - published
 
 jobs:
-  # test:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: 3.x
-
-  #     - name: Install dependencies
-  #       run: |
-  #         pip install --upgrade setuptools wheel twine pytest hdstats odc-algo
-  #         pip install -e .
-
-  #     - name: Run tests
-  #       run: |
-  #         pytest .
-
   build:
-    runs-on: ubuntu-latest
-    # needs: test
-    # if: github.event_name == 'release'
+    runs-on: ${{ matrix.os }}
     strategy:
-        matrix:
-          os: [ubuntu-latest]
-          python-version: ["3.9", "3.10", "3.11", "3.12"]
-  
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          fetch-depth: 0
 
-      - name: Set up Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
 
-      - name: Install dependencies
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist -i 3.10 -i 3.11 -i 3.12 -i 3.13 -i 3.14
+          manylinux: auto
+
+      - name: Install built wheel and test dependencies
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          pip install --upgrade setuptools setuptools-scm wheel
-  
-      - name: Build the package
-        run: |
-          python setup.py bdist_wheel
+          python -m pip install --upgrade pip
+          python -m pip install dist/*cp313*.whl --group dev
 
-      - name: Get version number for tagging the image
-        id: get_version
-        run: |
-          git fetch --all --tags
-          echo "VERSION=$(git describe --tags)" >> $GITHUB_OUTPUT
+      - name: Run Python test suite
+        if: matrix.os == 'ubuntu-latest'
+        run: pytest
 
-      # - name: Create GitHub Release
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      #   run: >-
-      #     gh release create
-      #     '${{ steps.get_version.outputs.VERSION }}'
-      #     --repo '${{ github.repository }}'
-      #     --notes ""
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-${{ matrix.os }}
+          path: dist
 
-      - name: Upload artifact signatures to GitHub Release
-        if: github.event_name == 'release'
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v7
+        with:
+          name: sdist
+          path: dist
+
+  publish:
+    needs: [build, sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdist
+          path: dist
+
+      - name: Upload to GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          gh release upload
-          '${{ steps.get_version.outputs.VERSION }}' dist/**
-          --repo '${{ github.repository }}'
+        run: gh release upload --clobber '${{ github.event.release.tag_name }}' dist/* --repo '${{ github.repository }}'

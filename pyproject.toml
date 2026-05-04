@@ -1,11 +1,28 @@
 [build-system]
-requires = [
-    "setuptools",
-    "wheel",
-    "setuptools-rust",
-    "setuptools_scm[toml]>=3.4",
-]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
-[tool.setuptools_scm]
-write_to = "datacube_compute/_version.py"
+[project]
+name = "datacube-compute"
+dynamic = ["version"]
+description = "Miscellaneous Algorithmic helper methods"
+authors = [{ name = "Open Data Cube" }]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = ["numpy", "xarray"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-benchmark",
+]
+
+backwards-compatibility = [
+    "hdstats",
+    "odc-algo",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "datacube_compute.backend"

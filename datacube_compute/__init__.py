@@ -4,6 +4,13 @@ from typing import Optional, Tuple, Union
 import numpy as np
 import xarray as xr
 
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("datacube-compute")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
 from .backend import (
     _geomedian,
     _geomedian_int16,

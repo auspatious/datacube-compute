@@ -1,7 +1,9 @@
-from odc.algo._percentile import np_percentile
-from datacube_compute import percentile
 import numpy as np
 import pytest
+
+odc_algo = pytest.importorskip("odc.algo")
+from odc.algo._percentile import np_percentile
+from datacube_compute import percentile
 
 
 SIZE = (50, 50_000)

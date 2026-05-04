@@ -2,8 +2,6 @@
 
 A library with fast implementations of algorithms for processing satellite images.
 
-**Note** This code is not well tested. There is a [more complete implementation in odc-algo](https://github.com/opendatacube/odc-algo/tree/add-rust-geomedian-impl).
-
 ## Install
 
 First install rust if not already installed:
@@ -16,14 +14,19 @@ First install rust if not already installed:
 Then clone the repo and use pip to install the package:
 
 ``` bash
-    git clone https://github.com/opendatacube/datacube-compute.git
+    git clone https://github.com/auspatious/datacube-compute.git
     pip install datacube-compute
 ```
 
 ## Tests
 
-To run the tests install `pytest-benchmark` and `hdstats`.
+To run the tests install `pytest-benchmark` and to do performance comparisons, install `hdstats`.
 
+
+## Versioning
+
+To release a new version, update the [Cargo.toml](Cargo.toml) file, and then create a release
+on GitHub with the same version number.
 
 ## References
 

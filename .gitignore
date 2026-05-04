@@ -1,6 +1,6 @@
 __pycache__
-backend.cpython-311-darwin.so
-datacube_compute.egg-info
+*.so
+*.egg-info
 
 *.tif
 notebooks/**/*.xml
@@ -10,5 +10,6 @@ notebooks/**/*.xml
 build
 target
 dist
+.venv
 
 datacube_compute/_version.py
