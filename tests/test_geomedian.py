@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 from datacube_compute import geomedian
+
+hdstats = pytest.importorskip("hdstats")
 from hdstats import nangeomedian_pcm, smad_pcm, emad_pcm, bcmad_pcm
 
 
